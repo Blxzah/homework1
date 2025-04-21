@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
         <p>Test accounts: yahya:pass123, admin:admin123</p>
     `);
 });
-
+//verefication login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
@@ -58,11 +58,11 @@ app.get('/profile', (req, res) => {
         <h1>Welcome, ${req.session.user.username}</h1>
         <p>Your role: ${req.session.user.role}</p>
         
-        <h2>Update Profile (Vulnerable to Privilege Escalation)</h2>
+        
         <form action="/update-profile" method="POST">
             <input type="hidden" name="id" value="${req.session.user.id}">
             <label>Username: <input type="text" name="username" value="${req.session.user.username}"></label><br>
-            <label>Role: <input type="text" name="role" value="${req.session.user.role}"></label><br>
+           
             <button type="submit">Update Profile</button>
         </form>
         
@@ -115,19 +115,17 @@ app.get('/admin', (req, res) => {
 // Vulnerable Update Endpoint (No Role Validation)
 app.post('/update-profile', (req, res) => {
     if (!req.session.user) return res.redirect('/');
-    
-    // UNSECURE: Allows role modification!
-    req.session.user.role = req.body.role;
+
     req.session.user.username = req.body.username;
-    
-    // Update in database
+
     const userIndex = users.findIndex(u => u.id === parseInt(req.body.id));
     if (userIndex !== -1) {
-        users[userIndex] = req.session.user;
+        users[userIndex].username = req.body.username;
     }
-    
+
     res.redirect('/profile');
 });
+
 
 // Admin Delete Function (Can delete any account including self)
 app.post('/delete-user', (req, res) => {
